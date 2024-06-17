@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-
+    <!-- CAMERA CONFIG -->
     <arg name="serial_no"           default=""/>
     <arg name="usb_port_id"         default=""/>
     <arg name="device_type"         default=""/>
@@ -268,7 +268,11 @@
 	</node>
 
     <node pkg="grasp_n_sorter" type="cloud_publisher_rviz.py" name="cloud_publisher_rviz" output="screen" />
-    
-    <node pkg="grasp_n_sorter" type="get_grasps_server.py" name="get_grasps_server" output="screen" />
+
+    <arg name="frame_id_pc" default="camera_color_frame"/>
+
+    <node pkg="grasp_n_sorter" type="get_grasps_server.py" name="get_grasps_server" output="screen">
+      <param name="frame_id_pc" value="$(arg frame_id_pc)"/>
+    </node>
 
 </launch>

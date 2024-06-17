@@ -17,9 +17,9 @@ cloud_processed = True
 
 def filter_pointcloud(pointcloud):
     # Define the workspace limits
-    x_min, x_max = -0.5, 0.31
+    x_min, x_max = -0.15, 0.16
     y_min, y_max = -0.5, 0.5
-    z_min, z_max = -0.5, 0.7
+    z_min, z_max = 0.425, 0.7
 
     # Extract points within the specified workspace
     filtered_points = []
@@ -56,8 +56,9 @@ def get_grasp_handle(req):
 
         # Publish the filtered point cloud
         header = Header()
-        # header.frame_id = "base_link"
-        header.frame_id = "camera_color_frame"
+        # header.frame_id = "camera_color_frame"
+        frame_id_pc = rospy.get_param('~frame_id_pc', 'camera_color_frame')
+        header.frame_id = frame_id_pc
         header.stamp = rospy.Time.now()
         filtered_cloud_msg = point_cloud2.create_cloud_xyz32(header, cloud.tolist())
         filtered_pub.publish(filtered_cloud_msg)
@@ -73,7 +74,7 @@ def get_grasp_handle(req):
         msg = CloudIndexed()
         header = Header()
         # header.frame_id = "base_link"
-        header.frame_id = "camera_color_frame"
+        header.frame_id = frame_id_pc
         header.stamp = rospy.Time.now()
         msg.cloud_sources.cloud = point_cloud2.create_cloud_xyz32(header, cloud.tolist())
         msg.cloud_sources.view_points.append(Point(0,0,0))
@@ -92,7 +93,7 @@ def get_grasp_handle(req):
 
         grasps_response = GraspConfigList()
         grasps_response.header = Header()
-        grasps_response.header.frame_id = 'camera_color_frame'
+        grasps_response.header.frame_id = frame_id_pc
         grasps_response.header.stamp = rospy.Time.now()
         grasps_response.grasps = grasps
         

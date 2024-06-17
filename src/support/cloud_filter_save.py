@@ -8,9 +8,9 @@ import sensor_msgs.point_cloud2 as pc2
 
 def filter_pointcloud(pointcloud):
     # Define the workspace limits
-    x_min, x_max = -0.5, 0.31
+    x_min, x_max = -0.15, 0.16
     y_min, y_max = -0.5, 0.5
-    z_min, z_max = -0.5, 0.7
+    z_min, z_max = 0.425, 0.7
 
     # Extract points within the specified workspace
     filtered_points = []
@@ -30,7 +30,7 @@ def pointcloud_callback(msg):
 
     # Expand the home directory and set the save path
     home_dir = os.path.expanduser('~')
-    save_path = os.path.join(home_dir, 'filtered_pointcloud5.pcd')
+    save_path = os.path.join(home_dir, 'filtered_pointcloud7.pcd')
 
     # Save the filtered point cloud to a PCD file
     pcl.save(filtered_cloud, save_path)
