@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#CODE INSIDE THE RASPBERRY PI OF THE NIRYO
 import rospy
 from grasp_n_sorter.srv import  jointsParm, jointsParmResponse
 from niryo_one_python_api.niryo_one_api import NiryoOne
