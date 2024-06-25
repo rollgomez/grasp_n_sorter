@@ -37,7 +37,7 @@ def transform_cam2base(point_camera):
 
     # Transform the point to the robot base frame
     try:
-        transform = tf_buffer.lookup_transform("base_link", "camera_link", rospy.Time(0), rospy.Duration(1.0))
+        transform = tf_buffer.lookup_transform("base_link", "camera_color_optical_frame", rospy.Time(0), rospy.Duration(1.0))
         point_in_base = tf2_geometry_msgs.do_transform_point(point_in_camera, transform)
         rospy.loginfo(f"Object coordinates in base frame: {point_in_base.point.x}, {point_in_base.point.y}, {point_in_base.point.z}")
     except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
@@ -48,6 +48,7 @@ def transform_cam2base(point_camera):
 def inverse_kinematics(points_base):
     my_chain = Chain.from_urdf_file("/home/rolando/catkin_ws/src/niryo_one_description/urdf/niryo_one.urdf")
     point = [points_base.point.x, points_base.point.y, points_base.point.z]
+    # point = [0.2, 0.3, 0]
     ik_result = my_chain.inverse_kinematics(point)
     joints = ik_result[1:7]
     return joints
@@ -94,7 +95,7 @@ def move():
     joint_state = JointState()
     joint_state.header.stamp = rospy.Time.now()
     joint_state.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']  # Add all your joint names
-    joint_state.position = [0.0, 0.0, 0.0]  # Initial positions
+    joint_state.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # Initial positions
     joint_state.velocity = []
     joint_state.effort = []
 

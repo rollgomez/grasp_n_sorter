@@ -22,7 +22,7 @@ def publish_cloud(pub):
         pub.publish(latest_cloud)
 
 def main():
-    rospy.init_node('repeat_cloud_publisher')
+    rospy.init_node('cloud_publisher_rviz')
 
     # Subscribe to the filtered point cloud topic
     rospy.Subscriber('filtered_cloud', PointCloud2, cloudCallback)

@@ -74,7 +74,7 @@
   <arg name="stereo_module/exposure/2"  default="1"/>
   <arg name="stereo_module/gain/2"      default="16"/>
   
-  
+
 
   <group ns="$(arg camera)">
     <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">
@@ -163,7 +163,7 @@
 	<param name="use_gui" value="$(arg gui)" />
 
 	<!-- <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" /> -->
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" /> -->
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 	<!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find niryo_one_description)/config/default_config.rviz" /> -->
   <node type="rviz" name="rviz" pkg="rviz" args="-d $(find grasp_n_sorter)/config/config_project.rviz" />
@@ -205,6 +205,7 @@
         <param name="remove_outliers" value="false"/>
         <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam>
         <!-- <rosparam param="workspace"> [-0.2, 0.2, -0.2, 0.2, -0.2, 0.2] </rosparam> -->
+        <!-- <rosparam param="camera_position"> [0.6, 0, 0.3] </rosparam> HERE -->
         <rosparam param="camera_position"> [0, 0, 0] </rosparam>
                 
         <!-- General parameters -->
@@ -224,6 +225,7 @@
         
         <!-- Filtering of grasps which are too low on (i.e. too close to) table -->
         <param name="filter_table_side_grasps" value="false" />
+        <!-- <rosparam param="vertical_axis"> [0, 0, 0] </rosparam> HERE-->
         <rosparam param="vertical_axis"> [0, 0, 1] </rosparam>
         <param name="angle_thresh" value="0.1" />
         <param name="table_height" value="0.0" />
@@ -248,6 +250,7 @@
 
     <node pkg="grasp_n_sorter" type="cloud_publisher_rviz.py" name="cloud_publisher_rviz" output="screen" />
     
+    <!-- <arg name="frame_id_pc" default="camera_color_optical_frame"/> -->
     <arg name="frame_id_pc" default="camera_color_optical_frame"/>
 
     <node pkg="grasp_n_sorter" type="get_grasps_server.py" name="get_grasps_server" output="screen">

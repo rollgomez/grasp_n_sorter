@@ -57,7 +57,7 @@ def get_grasp_handle(req):
         # Publish the filtered point cloud
         header = Header()
         # header.frame_id = "camera_color_frame"
-        frame_id_pc = rospy.get_param('~frame_id_pc', 'camera_color_frame')
+        frame_id_pc = rospy.get_param('~frame_id_pc', 'camera_link')
         header.frame_id = frame_id_pc
         header.stamp = rospy.Time.now()
         filtered_cloud_msg = point_cloud2.create_cloud_xyz32(header, cloud.tolist())
