@@ -16,7 +16,7 @@ def pointcloud_callback(msg):
 
     # Expand the home directory
     home_dir = os.path.expanduser('~')
-    save_path = os.path.join(home_dir, 'mypointcloud7.pcd')
+    save_path = os.path.join(home_dir, 'mypointcloud8.pcd')
 
     # Save the PCL point cloud to a PCD file
     pcl.save(cloud, save_path)

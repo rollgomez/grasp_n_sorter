@@ -17,9 +17,9 @@ cloud_processed = True
 
 def filter_pointcloud(pointcloud):
     # Define the workspace limits
-    x_min, x_max = -0.15, 0.16
-    y_min, y_max = -0.5, 0.5
-    z_min, z_max = 0.425, 0.7
+    x_min, x_max = -0.10, 0.10
+    y_min, y_max = -0.05, 0.05
+    z_min, z_max = 0.45, 0.60
 
     # Extract points within the specified workspace
     filtered_points = []
