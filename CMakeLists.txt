@@ -67,6 +67,7 @@ add_service_files(
   FILES
   reqGrasp.srv
   jointsParm.srv
+  classifyImg.srv
 )
 
 ## Generate actions in the 'action' folder

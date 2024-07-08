@@ -87,7 +87,7 @@ def transform_cam2base(surface_camera, approach_camera, binormal_camera, axis_ca
 
 
 def inverse_kinematics(target_position, rotation_matrix):
-    my_chain = Chain.from_urdf_file("/home/rolando/catkin_ws/src/niryo_one_description/urdf/niryo_one.urdf")
+    my_chain = Chain.from_urdf_file("./urdf/niryo_one.urdf")
     
     ik_result = my_chain.inverse_kinematics(
         target_position = target_position,

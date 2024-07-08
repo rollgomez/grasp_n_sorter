@@ -1,0 +1,4 @@
+int32 confirmation
+---
+string class_name
+float32 confidence_level
