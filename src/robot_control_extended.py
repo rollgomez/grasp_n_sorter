@@ -107,11 +107,11 @@ def inverse_kinematics(target_position, rotation_matrix):
     joints = ik_result[1:7]
     return joints
 
-def move_robot_joints(joints):
-    rospy.wait_for_service('/niryo_get_joints') #/niryo_joints_service
+def move_robot_joints(j1, j2, j3, j4, j5, j6):
+    rospy.wait_for_service('/niryo_joints_service') #/niryo_joints_service
     try:
-        grasp_pose_service = rospy.ServiceProxy('/niryo_get_joints', jointsParm) #/niryo_joints_service
-        request = jointsParmRequest(joints)
+        grasp_pose_service = rospy.ServiceProxy('/niryo_joints_service', jointsParm) #/niryo_joints_service
+        request = jointsParmRequest(j1, j2, j3, j4, j5, j6)
         response = grasp_pose_service(request)
         if response.success:
             rospy.loginfo("Successfully moved joints %s", response.message)
@@ -122,11 +122,11 @@ def move_robot_joints(joints):
     except rospy.ServiceException as e:
         rospy.logerr("Service call failed: %s", e)
 
-def move_robot_to_pose(pose): #MODIFYYYYYYYYYYYY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+def move_robot_to_pose(x, y, z, roll, pitch, yaw): #MODIFYYYYYYYYYYYY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     rospy.wait_for_service('/niryo_pose_service')
     try:
         niryo_pose_service = rospy.ServiceProxy('/niryo_pose_service', poseParm)
-        request = poseParmRequest(pose)
+        request = poseParmRequest(x, y, z, roll, pitch, yaw)
         response = niryo_pose_service(request)
         if response.success:
             rospy.loginfo("Successfully moved to pose: %s", response.message)
@@ -160,25 +160,27 @@ if __name__ == "__main__":
     # Transform configuration (pose and orientation) from camera to robot base
     grasp_position_base, rotation_matrix_base, roll, pitch, yaw = transform_cam2base(grasp.surface, grasp.approach, grasp.binormal, grasp.axis)
 
-    # Inverse kinematics to get joints
-    joints = inverse_kinematics(grasp_position_base, rotation_matrix_base)
+    # # Inverse kinematics to get joints
+    # joints = inverse_kinematics(grasp_position_base, rotation_matrix_base)
+    # j1, j2, j3, j4, j5, j6 = joints
+    # # Move robot to object
+    # confirmation = move_robot_joints(j1, j2, j3, j4, j5, j6)
+    x, y, z = grasp_position_base
+    rospy.loginfo("x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f", x, y, z, roll, pitch, yaw)
+    confirmation = move_robot_to_pose(x, y, z, roll, pitch, yaw)
+    # # Grasp object
+    # # Function to start grasp!!!!!!!!!!!!!!!!!
 
-    # Move robot to object
-    confirmation = move_robot_joints(joints)
+    # # Move to camera 
+    # confirmation = move_robot_to_pose(pose)
 
-    # Grasp object
-    # Function to start grasp!!!!!!!!!!!!!!!!!
+    # # Identify object and move to classify
+    # class_name, confidence = classify_object()
+    # class_positions = {'codo':[0, 0, 0], 'neplo':[0, 0, 0], 'tee':[0, 0, 0], 'union':[0, 0, 0]} # Change
+    # confirmation = move_robot_to_pose(class_positions[class_name])
+    # # STOP GRASPING!!!!!!!!!!!!!!!!!
 
-    # Move to camera 
-    confirmation = move_robot_to_pose(pose)
-
-    # Identify object and move to classify
-    class_name, confidence = classify_object()
-    class_positions = {'codo':[0, 0, 0], 'neplo':[0, 0, 0], 'tee':[0, 0, 0], 'union':[0, 0, 0]} # Change
-    confirmation = move_robot_to_pose(class_positions[class_name])
-    # STOP GRASPING!!!!!!!!!!!!!!!!!
-
-    # repeat the above code until there are no more objects
+    # # repeat the above code until there are no more objects
 
 
     
