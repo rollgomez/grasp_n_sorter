@@ -8,6 +8,7 @@ from sensor_msgs.msg import JointState
 from grasp_n_sorter.srv import reqGrasp, reqGraspResponse, reqGraspRequest
 from grasp_n_sorter.srv import  jointsParm, jointsParmRequest
 from grasp_n_sorter.srv import  poseParm, poseParmRequest
+from grasp_n_sorter.srv import graspObject, graspObjectRequest
 from grasp_n_sorter.srv import classifyImg, classifyImgResponse, classifyImgRequest
 from gpd.msg import GraspConfigList
 from ikpy.chain import Chain
@@ -121,8 +122,9 @@ def move_robot_joints(j1, j2, j3, j4, j5, j6):
             return response.success
     except rospy.ServiceException as e:
         rospy.logerr("Service call failed: %s", e)
+        return False
 
-def move_robot_to_pose(x, y, z, roll, pitch, yaw): #MODIFYYYYYYYYYYYY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+def move_robot_to_pose(x, y, z, roll, pitch, yaw):
     rospy.wait_for_service('/niryo_pose_service')
     try:
         niryo_pose_service = rospy.ServiceProxy('/niryo_pose_service', poseParm)
@@ -136,6 +138,23 @@ def move_robot_to_pose(x, y, z, roll, pitch, yaw): #MODIFYYYYYYYYYYYY!!!!!!!!!!!
             return response.success
     except rospy.ServiceException as e:
         rospy.logerr("Service call failed: %s", e)
+        return False
+
+def grasp_object(x, y, z, roll, pitch, yaw):
+    rospy.wait_for_service('/niryo_grasp_service')
+    try:
+        grasp_service = rospy.ServiceProxy('/niryo_grasp_service', graspObject)
+        request = graspObjectRequest(x, y, z, roll, pitch, yaw)
+        response = grasp_service(request)
+        if response.success:
+            rospy.loginfo("Successfully grasped object: %s", response.message)
+            return response.success
+        else:
+            rospy.logwarn("Failed to grasp object: %s", response.message)
+            return response.success
+    except rospy.ServiceException as e:
+        rospy.logerr("Service call failed: %s", e)
+        return False
 
 def classify_object():
     rospy.wait_for_service('/classify_image')
@@ -148,7 +167,7 @@ def classify_object():
     except rospy.ServiceException as e:
         rospy.logerr("Service call failed: %s", e)
         return response.class_name, response.confidence_level
-
+    
 if __name__ == "__main__":
     rospy.init_node('robot_control_node')
     
@@ -165,11 +184,12 @@ if __name__ == "__main__":
     # j1, j2, j3, j4, j5, j6 = joints
     # # Move robot to object
     # confirmation = move_robot_joints(j1, j2, j3, j4, j5, j6)
+
     x, y, z = grasp_position_base
     rospy.loginfo("x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f", x, y, z, roll, pitch, yaw)
-    confirmation = move_robot_to_pose(x, y, z, roll, pitch, yaw)
-    # # Grasp object
-    # # Function to start grasp!!!!!!!!!!!!!!!!!
+    
+    # Grasp object
+    confirmation = grasp_object(x, y, z, roll, pitch, yaw)
 
     # # Move to camera 
     # confirmation = move_robot_to_pose(pose)
