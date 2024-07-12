@@ -3,7 +3,7 @@ import rospy
 import tf2_ros
 import tf2_geometry_msgs
 import numpy as np
-from geometry_msgs.msg import PointStamped, Vector3Stamped
+from geometry_msgs.msg import PointStamped, Vector3Stamped, Vector3
 from sensor_msgs.msg import JointState
 from grasp_n_sorter.srv import reqGrasp, reqGraspResponse, reqGraspRequest
 from grasp_n_sorter.srv import  jointsParm, jointsParmRequest
@@ -15,9 +15,9 @@ from ikpy.chain import Chain
 
 
 def get_grasps(confirmation):
-    rospy.wait_for_service('select_grasp_service')
+    rospy.wait_for_service('get_grasps_service')
     try: 
-        get_grasp_client = rospy.ServiceProxy('select_grasp_service', reqGrasp)
+        get_grasp_client = rospy.ServiceProxy('get_grasps_service', reqGrasp)
         
         response = get_grasp_client(confirmation)
         return response.grasp_configs
@@ -140,11 +140,11 @@ def move_robot_to_pose(x, y, z, roll, pitch, yaw):
         rospy.logerr("Service call failed: %s", e)
         return False
 
-def grasp_object(x, y, z, roll, pitch, yaw):
+def grasp_object(x, y, z, roll, pitch, yaw, approach):
     rospy.wait_for_service('/niryo_grasp_service')
     try:
         grasp_service = rospy.ServiceProxy('/niryo_grasp_service', graspObject)
-        request = graspObjectRequest(x, y, z, roll, pitch, yaw)
+        request = graspObjectRequest(x, y, z, roll, pitch, yaw, approach)
         response = grasp_service(request)
         if response.success:
             rospy.loginfo("Successfully grasped object: %s", response.message)
@@ -186,10 +186,12 @@ if __name__ == "__main__":
     # confirmation = move_robot_joints(j1, j2, j3, j4, j5, j6)
 
     x, y, z = grasp_position_base
+    approach = Vector3()
+    approach.x, approach.y, approach.z = rotation_matrix_base[:, 0]
     rospy.loginfo("x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f", x, y, z, roll, pitch, yaw)
     
     # Grasp object
-    confirmation = grasp_object(x, y, z, roll, pitch, yaw)
+    confirmation = grasp_object(x, y, z, roll, pitch, yaw, approach)
 
     # # Move to camera 
     # confirmation = move_robot_to_pose(pose)

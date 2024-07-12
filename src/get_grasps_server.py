@@ -69,7 +69,7 @@ def get_grasp_handle(req):
         C, _, _, _ = lstsq(A, X[:,2])
         a, b, c, d = C[0], C[1], -1., C[2] # coefficients of the form: a*x + b*y + c*z + d = 0.
         dist = ((a*X[:,0] + b*X[:,1] + d) - X[:,2])**2
-        idx = np.where(dist > 0.01)
+        idx = np.where(dist > 0.005)
 
         msg = CloudIndexed()
         header = Header()
@@ -107,8 +107,8 @@ def get_grasp_handle(req):
 
 def request_grasp_server():
     # Create a ROS node
-    rospy.init_node('select_grasp_server')
-    s = rospy.Service('select_grasp_service', reqGrasp, get_grasp_handle)
+    rospy.init_node('get_grasps_server')
+    s = rospy.Service('get_grasps_service', reqGrasp, get_grasp_handle)
     rospy.loginfo('Ready to send grasp:')
     rospy.spin()
 
