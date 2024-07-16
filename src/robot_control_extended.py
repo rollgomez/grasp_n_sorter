@@ -189,9 +189,15 @@ if __name__ == "__main__":
     approach = Vector3()
     approach.x, approach.y, approach.z = rotation_matrix_base[:, 0]
     rospy.loginfo("x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f", x, y, z, roll, pitch, yaw)
+    rospy.loginfo("Received grasp request: x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f, approach vector: (%f, %f, %f)", 
+                  x, y, z, roll, pitch, yaw, approach.x, approach.y, approach.z)
     
     # Grasp object
     confirmation = grasp_object(x, y, z, roll, pitch, yaw, approach)
+
+    if confirmation:
+        confirmation = move_robot_joints(0, 0, 0, 0, 0, 0)
+        confirmation = move_robot_to_pose(0.37, -0.03, 0.22, 0, -0.5, 0) #Move to camera
 
     # # Move to camera 
     # confirmation = move_robot_to_pose(pose)
