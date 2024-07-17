@@ -171,33 +171,41 @@ def classify_object():
 if __name__ == "__main__":
     rospy.init_node('robot_control_node')
     
-    # Get the grasp configuration for the object
-    confirmation = 1
-    grasps = get_grasps(confirmation)
-    grasp = grasps.grasps[0] # Most possible grasp
+    confirmation_grasp = 0
+    while not confirmation_grasp:
+        # Get the grasp configuration for the object
+        confirmation = 1
+        grasps = get_grasps(confirmation)
+        grasp = grasps.grasps[0] # Most possible grasp
 
-    # Transform configuration (pose and orientation) from camera to robot base
-    grasp_position_base, rotation_matrix_base, roll, pitch, yaw = transform_cam2base(grasp.surface, grasp.approach, grasp.binormal, grasp.axis)
+        # Transform configuration (pose and orientation) from camera to robot base
+        grasp_position_base, rotation_matrix_base, roll, pitch, yaw = transform_cam2base(grasp.surface, grasp.approach, grasp.binormal, grasp.axis)
 
-    # # Inverse kinematics to get joints
-    # joints = inverse_kinematics(grasp_position_base, rotation_matrix_base)
-    # j1, j2, j3, j4, j5, j6 = joints
-    # # Move robot to object
-    # confirmation = move_robot_joints(j1, j2, j3, j4, j5, j6)
+        # # Inverse kinematics to get joints
+        # joints = inverse_kinematics(grasp_position_base, rotation_matrix_base)
+        # j1, j2, j3, j4, j5, j6 = joints
+        # # Move robot to object
+        # confirmation = move_robot_joints(j1, j2, j3, j4, j5, j6)
 
-    x, y, z = grasp_position_base
-    approach = Vector3()
-    approach.x, approach.y, approach.z = rotation_matrix_base[:, 0]
-    rospy.loginfo("x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f", x, y, z, roll, pitch, yaw)
-    rospy.loginfo("Received grasp request: x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f, approach vector: (%f, %f, %f)", 
-                  x, y, z, roll, pitch, yaw, approach.x, approach.y, approach.z)
-    
-    # Grasp object
-    confirmation = grasp_object(x, y, z, roll, pitch, yaw, approach)
+        x, y, z = grasp_position_base
+        approach = Vector3()
+        approach.x, approach.y, approach.z = rotation_matrix_base[:, 0]
+        rospy.loginfo("x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f", x, y, z, roll, pitch, yaw)
+        rospy.loginfo("Received grasp request: x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f, approach vector: (%f, %f, %f)", 
+                    x, y, z, roll, pitch, yaw, approach.x, approach.y, approach.z)
+        
+        # Grasp object
+        confirmation_grasp = grasp_object(x, y, z, roll, pitch, yaw, approach)
 
-    if confirmation:
+    if confirmation_grasp:
         confirmation = move_robot_joints(0, 0, 0, 0, 0, 0)
         confirmation = move_robot_to_pose(0.37, -0.03, 0.22, 0, -0.5, 0) #Move to camera
+
+        # Identify object and move to classify
+        class_name, confidence = classify_object()
+        rospy.loginfo(class_name)
+        rospy.loginfo(confidence)
+        confirmation = move_robot_joints(0, 0, 0, 0, 0, 0)
 
     # # Move to camera 
     # confirmation = move_robot_to_pose(pose)
