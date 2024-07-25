@@ -174,6 +174,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   src/cloud_publisher_rviz.py
   src/get_grasps_server.py
+  src/identify_identify_objectobject.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

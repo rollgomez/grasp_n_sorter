@@ -155,6 +155,22 @@ def grasp_object(x, y, z, roll, pitch, yaw, approach):
     except rospy.ServiceException as e:
         rospy.logerr("Service call failed: %s", e)
         return False
+    
+def leave_object(x, y, z, roll, pitch, yaw):
+    rospy.wait_for_service('/niryo_detach_service')
+    try:
+        niryo_detach_service = rospy.ServiceProxy('/niryo_detach_service', poseParm)
+        request = poseParmRequest(x, y, z, roll, pitch, yaw)
+        response = niryo_detach_service(request)
+        if response.success:
+            rospy.loginfo("Successfully left object: %s", response.message)
+            return response.success
+        else:
+            rospy.logwarn("Failed to leave object: %s", response.message)
+            return response.success
+    except rospy.ServiceException as e:
+        rospy.logerr("Service call failed: %s", e)
+        return False
 
 def classify_object():
     rospy.wait_for_service('/classify_image')
@@ -172,48 +188,64 @@ if __name__ == "__main__":
     rospy.init_node('robot_control_node')
     
     confirmation_grasp = 0
+
     while not confirmation_grasp:
         # Get the grasp configuration for the object
         confirmation = 1
         grasps = get_grasps(confirmation)
-        grasp = grasps.grasps[0] # Most possible grasp
 
-        # Transform configuration (pose and orientation) from camera to robot base
-        grasp_position_base, rotation_matrix_base, roll, pitch, yaw = transform_cam2base(grasp.surface, grasp.approach, grasp.binormal, grasp.axis)
+        for grasp in grasps.grasps:
 
-        # # Inverse kinematics to get joints
-        # joints = inverse_kinematics(grasp_position_base, rotation_matrix_base)
-        # j1, j2, j3, j4, j5, j6 = joints
-        # # Move robot to object
-        # confirmation = move_robot_joints(j1, j2, j3, j4, j5, j6)
+            # Transform configuration (pose and orientation) from camera to robot base
+            grasp_position_base, rotation_matrix_base, roll, pitch, yaw = transform_cam2base(grasp.surface, grasp.approach, grasp.binormal, grasp.axis)
 
-        x, y, z = grasp_position_base
-        approach = Vector3()
-        approach.x, approach.y, approach.z = rotation_matrix_base[:, 0]
-        rospy.loginfo("x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f", x, y, z, roll, pitch, yaw)
-        rospy.loginfo("Received grasp request: x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f, approach vector: (%f, %f, %f)", 
-                    x, y, z, roll, pitch, yaw, approach.x, approach.y, approach.z)
-        
-        # Grasp object
-        confirmation_grasp = grasp_object(x, y, z, roll, pitch, yaw, approach)
+            x, y, z = grasp_position_base
+            approach = Vector3()
+            approach.x, approach.y, approach.z = rotation_matrix_base[:, 0]
+            rospy.loginfo("x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f", x, y, z, roll, pitch, yaw)
+            rospy.loginfo("Received grasp request: x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f, approach vector: (%f, %f, %f)", 
+                        x, y, z, roll, pitch, yaw, approach.x, approach.y, approach.z)
 
-    if confirmation_grasp:
-        confirmation = move_robot_joints(0, 0, 0, 0, 0, 0)
-        confirmation = move_robot_to_pose(0.37, -0.03, 0.22, 0, -0.5, 0) #Move to camera
+            if not z < 0.015: #Filter grasps too close to ground to avoid collision
+                # Grasp object
+                confirmation_grasp = grasp_object(x, y, z, roll, pitch, yaw, approach)
 
-        # Identify object and move to classify
-        class_name, confidence = classify_object()
-        rospy.loginfo(class_name)
-        rospy.loginfo(confidence)
-        confirmation = move_robot_joints(0, 0, 0, 0, 0, 0)
+                if confirmation_grasp:
+                    rospy.loginfo("Grasp successful, ending loop.")
+                    break  # Exit the for loop if the grasp is successful
+                else:
+                    # This else belongs to the for loop, not the if statement. It executes if the for loop completes without a break.
+                    rospy.loginfo("No successful grasp found, retrying.")
+                    continue  # Continue the while loop to try getting grasps again
+    
+    move_robot_joints(0, 0, 0, 0, 0, 0)
 
-    # # Move to camera 
-    # confirmation = move_robot_to_pose(pose)
+    confidence = 0
+    roll = 0
+    count = 0
+    while confidence < 0.6:
+        confirmation = move_robot_to_pose(0.35, -0.03, 0.22, roll, -0.5, 0) #Move to camera
+        rospy.sleep(1)
+        if confirmation:
+            class_name, confidence = classify_object()
+            rospy.loginfo(class_name)
+            rospy.loginfo(confidence)
+            if roll < 1.57:
+                roll+=1.57
+            else:
+                roll=-1.57
+        count+=1
+        if count == 6:
+            class_name = 'codo'
+            break
 
-    # # Identify object and move to classify
-    # class_name, confidence = classify_object()
-    # class_positions = {'codo':[0, 0, 0], 'neplo':[0, 0, 0], 'tee':[0, 0, 0], 'union':[0, 0, 0]} # Change
-    # confirmation = move_robot_to_pose(class_positions[class_name])
+    #confirmation = move_robot_joints(0, 0, 0, 0, 0, 0)
+
+    class_positions = {'codo':[0.1, 0.15, 0.15], 'neplo':[0.2, 0.15, 0.15], 'tee':[0.1, -0.15, 0.15], 'union':[0.2, -0.15, 0.15]} # Change
+    roll, pitch, yaw = 0, 1.57, 0
+    x, y, z = class_positions[class_name][0], class_positions[class_name][1], class_positions[class_name][2]
+    confirmation = leave_object(x, y, z, roll, pitch, yaw)
+    move_robot_joints(0, 0, 0, 0, 0, 0)
     # # STOP GRASPING!!!!!!!!!!!!!!!!!
 
     # # repeat the above code until there are no more objects

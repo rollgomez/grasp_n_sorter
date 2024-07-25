@@ -9,7 +9,7 @@ from tensorflow.python.compiler.tensorrt import trt_convert as trt
 from grasp_n_sorter.srv import classifyImg, classifyImgResponse
 
 # Model
-model = tf.keras.models.load_model('./models/pvc_classifier_with_hand.h5')
+model = tf.keras.models.load_model('./models/pvc_classifier_hand.h5')
 
 # Classes
 class_labels = ['codo', 'neplo', 'tee', 'union'] 

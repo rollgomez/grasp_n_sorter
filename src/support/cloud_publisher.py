@@ -13,7 +13,7 @@ def publish_pointcloud():
     rate = rospy.Rate(1)  # Publish at 1 Hz
 
     home_dir = os.path.expanduser('~/pointclouds')
-    pcd_file_path = os.path.join(home_dir, 'mypointcloud8.pcd')
+    pcd_file_path = os.path.join(home_dir, 'mypointcloud.pcd')
 
     cloud = pcl.load(pcd_file_path)
 
