@@ -5,7 +5,7 @@ import tf2_geometry_msgs
 import numpy as np
 from geometry_msgs.msg import PointStamped, Vector3Stamped, Vector3
 from sensor_msgs.msg import JointState
-from grasp_n_sorter.srv import reqGrasp, reqGraspResponse, reqGraspRequest
+from grasp_n_sorter.srv import reqGraspMod, reqGraspModResponse, reqGraspModRequest
 from grasp_n_sorter.srv import  jointsParm, jointsParmRequest
 from grasp_n_sorter.srv import  poseParm, poseParmRequest
 from grasp_n_sorter.srv import graspObject, graspObjectRequest
@@ -17,7 +17,7 @@ from ikpy.chain import Chain
 def get_grasps(confirmation):
     rospy.wait_for_service('get_grasps_service')
     try: 
-        get_grasp_client = rospy.ServiceProxy('get_grasps_service', reqGrasp)
+        get_grasp_client = rospy.ServiceProxy('get_grasps_service', reqGraspMod)
         
         response = get_grasp_client(confirmation)
         return response.grasp_configs
@@ -189,23 +189,15 @@ if __name__ == "__main__":
     confirmation_grasp = 0
 
     while not confirmation_grasp:
-
-        grasps = GraspConfigList()
-        grasps.grasps = []    
-
         # Get the grasp configuration for the object
         confirmation = 1
         grasps = get_grasps(confirmation)
         rospy.loginfo('FINISHED GET GRASPS ALGORITHM')
         rospy.loginfo(grasps)
-
-        if len(grasps.grasps) == 0:
-            rospy.logwarn("No new grasps found. Retrying...")
-            continue
-
         for grasp in grasps.grasps:
+
             # Transform configuration (pose and orientation) from camera to robot base
-            grasp_position_base, rotation_matrix_base, roll, pitch, yaw = transform_cam2base(grasp.bottom, grasp.approach, grasp.binormal, grasp.axis)
+            grasp_position_base, rotation_matrix_base, roll, pitch, yaw = transform_cam2base(grasp.position, grasp.approach, grasp.binormal, grasp.axis)
 
             x, y, z = grasp_position_base
             approach = Vector3()
@@ -221,6 +213,7 @@ if __name__ == "__main__":
                     rospy.loginfo("Grasp successful, ending loop.")
                     break  # Exit the for loop if the grasp is successful
                 else:
+                    # This else belongs to the for loop, not the if statement. It executes if the for loop completes without a break.
                     rospy.loginfo("No successful grasp found, retrying.")
                     continue  # Continue the while loop to try getting grasps again
     
@@ -245,6 +238,8 @@ if __name__ == "__main__":
             class_name = 'codo'
             break
 
+    #confirmation = move_robot_joints(0, 0, 0, 0, 0, 0)
+
     class_positions = {'codo':[0.1, 0.15, 0.15], 'neplo':[0.2, 0.15, 0.15], 'tee':[0.1, -0.15, 0.15], 'union':[0.2, -0.15, 0.15]} # Change
     roll, pitch, yaw = 0, 1.57, 0
     x, y, z = class_positions[class_name][0], class_positions[class_name][1], class_positions[class_name][2]
@@ -252,7 +247,6 @@ if __name__ == "__main__":
     move_robot_joints(0, 0, 0, 0, 0, 0)
     # # STOP GRASPING!!!!!!!!!!!!!!!!!
 
-    #confirmation = move_robot_joints(0, 0, 0, 0, 0, 0)
     # # repeat the above code until there are no more objects
 
 

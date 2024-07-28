@@ -66,6 +66,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   reqGrasp.srv
+  reqGraspMod.srv
   jointsParm.srv
   poseParm.srv
   classifyImg.srv
@@ -82,7 +83,7 @@ add_service_files(
 # Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  geometry_msgs   sensor_msgs   std_msgs  gpd
+  geometry_msgs   sensor_msgs   std_msgs  gpd gpd_ros
 )
 
 ################################################
@@ -117,7 +118,7 @@ generate_messages(
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES grasp_n_sorter
- CATKIN_DEPENDS geometry_msgs gpd rospy sensor_msgs std_msgs message_runtime
+ CATKIN_DEPENDS geometry_msgs gpd rospy sensor_msgs std_msgs message_runtime gpd_ros
  DEPENDS system_lib
 )
 
@@ -174,7 +175,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   src/cloud_publisher_rviz.py
   src/get_grasps_server.py
-  src/identify_identify_objectobject.py
+  # src/identify_identify_objectobject.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

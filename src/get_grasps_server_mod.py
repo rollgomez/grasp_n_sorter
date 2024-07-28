@@ -3,17 +3,16 @@ from sensor_msgs.msg import PointCloud2
 from sensor_msgs import point_cloud2
 import numpy as np
 from scipy.linalg import lstsq
-from gpd.msg import CloudIndexed
+from gpd_ros.msg import CloudIndexed
 from std_msgs.msg import Header, Int64
 from geometry_msgs.msg import Point
-from gpd.msg import GraspConfigList
+from gpd_ros.msg import GraspConfigList
 import sensor_msgs.point_cloud2 as pc2
-from grasp_n_sorter.srv import reqGrasp, reqGraspResponse
+from grasp_n_sorter.srv import reqGraspMod, reqGraspModResponse
 
 # Global variables
 cloud = []
 grasps = []
-cloud_processed = True
 
 def filter_pointcloud(pointcloud):
     # Define the workspace limits
@@ -33,10 +32,8 @@ def filter_pointcloud(pointcloud):
 
 # Callback function to process the point cloud data
 def cloudCallback(msg):
-    global cloud, cloud_processed
-    if cloud_processed:
-        cloud = filter_pointcloud(msg)
-        cloud_processed = False
+    global cloud
+    cloud = filter_pointcloud(msg)
 
 # Callback function to process the grasps data
 def graspsCallback(msg):
@@ -44,7 +41,7 @@ def graspsCallback(msg):
     grasps = msg.grasps
 
 def get_grasp_handle(req):
-    global cloud, grasps, cloud_processed
+    global cloud, grasps
     if req.req:
         # Wait for the point cloud to arrive
         while len(cloud) == 0:
@@ -56,7 +53,6 @@ def get_grasp_handle(req):
 
         # Publish the filtered point cloud
         header = Header()
-        # header.frame_id = "camera_color_frame"
         frame_id_pc = rospy.get_param('~frame_id_pc', 'camera_link')
         header.frame_id = frame_id_pc
         header.stamp = rospy.Time.now()
@@ -73,7 +69,6 @@ def get_grasp_handle(req):
 
         msg = CloudIndexed()
         header = Header()
-        # header.frame_id = "base_link"
         header.frame_id = frame_id_pc
         header.stamp = rospy.Time.now()
         msg.cloud_sources.cloud = point_cloud2.create_cloud_xyz32(header, cloud.tolist())
@@ -82,9 +77,7 @@ def get_grasp_handle(req):
             msg.cloud_sources.camera_source.append(Int64(0))
         for i in idx[0]:
             msg.indices.append(Int64(i))    
-        # rospy.loginfo('Hit [ENTER] to publish')
         pub.publish(msg)
-        rospy.sleep(2)
         rospy.loginfo('Published cloud with %d indices', len(msg.indices))
 
         # Wait for grasps to arrive
@@ -96,11 +89,8 @@ def get_grasp_handle(req):
         grasps_response.header.frame_id = frame_id_pc
         grasps_response.header.stamp = rospy.Time.now()
         grasps_response.grasps = grasps
-        
-        # Mark the cloud as processed
-        cloud_processed = True
 
-        return reqGraspResponse(grasps_response)
+        return reqGraspModResponse(grasps_response)
 
     else:
         rospy.loginfo('Not ready for sending grasp.')
@@ -108,7 +98,7 @@ def get_grasp_handle(req):
 def request_grasp_server():
     # Create a ROS node
     rospy.init_node('get_grasps_server')
-    s = rospy.Service('get_grasps_service', reqGrasp, get_grasp_handle)
+    s = rospy.Service('get_grasps_service', reqGraspMod, get_grasp_handle)
     rospy.loginfo('Ready to send grasp:')
     rospy.spin()
 
