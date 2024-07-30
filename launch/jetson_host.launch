@@ -1,6 +1,7 @@
+<?xml version="1.0"?>
 <launch>
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_base_broadcaster" args="0.6 0 0.3 3.14159 0.65 0 world camera_link" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_base_broadcaster" args="0.6 0 0.32 3.14159 0.65 0 world camera_link" />
 
   <arg name="serial_no"           default=""/>
   <arg name="usb_port_id"         default=""/>
@@ -155,8 +156,8 @@
 
   <arg name="hardware_version" default="2" /> 
 	
-  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find niryo_one_description)/urdf/v1/niryo_one.urdf.xacro'" if="$(eval hardware_version == 1)"/>
-  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find niryo_one_description)/urdf/v2/niryo_one.urdf.xacro'" if="$(eval hardware_version == 2)"/>
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find grasp_n_sorter)/urdf/v1/niryo_one.urdf.xacro'" if="$(eval hardware_version == 1)"/>
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find grasp_n_sorter)/urdf/v2/niryo_one.urdf.xacro'" if="$(eval hardware_version == 2)"/>
 	<arg name="gui" default="true" />
 
 	<param name="robot_description" command="$(arg urdf_file)" />
@@ -167,6 +168,8 @@
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 	<!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find niryo_one_description)/config/default_config.rviz" /> -->
   <node type="rviz" name="rviz" pkg="rviz" args="-d $(find grasp_n_sorter)/config/config_project.rviz" />
+
+  <!-- GRASP POSE DETECTION ALGORITHM -->
 
   <!-- Load hand geometry parameters -->  
   <include file="$(find gpd)/launch/hand_geometry.launch">
@@ -203,13 +206,13 @@
         <!-- Preprocessing of point cloud -->
         <param name="voxelize" value="true"/>
         <param name="remove_outliers" value="false"/>
-        <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam>
-        <!-- <rosparam param="workspace"> [-0.2, 0.2, -0.2, 0.2, -0.2, 0.2] </rosparam> -->
+        <!-- <rosparam param="workspace"> [-0.10, 0.10, -0.05, 0.05, 0.45, 0.60] </rosparam> -->
+        <rosparam param="workspace"> [-0.10, 0.10, -0.11, 0.05, 0.40, 0.58] </rosparam>
         <!-- <rosparam param="camera_position"> [0.6, 0, 0.3] </rosparam> HERE -->
-        <rosparam param="camera_position"> [0, 0, 0] </rosparam>
+        <rosparam param="camera_position"> [0 0 0] </rosparam>
                 
         <!-- General parameters -->
-        <param name="num_samples" value="120" />
+        <param name="num_samples" value="200" />
         <param name="num_threads" value="8" />
         
         <!-- Parameters for local grasp candidate search -->
@@ -219,21 +222,21 @@
         
         <!-- Filtering of grasp candidates --> 
         <param name="filter_grasps" value="false" /> <!-- on workspace and robot hand aperture -->
-        <!-- <rosparam param="workspace_grasps"> [0.55, 1.0, -0.41, 0.03, -0.29, 1.0] </rosparam> -->
-        <rosparam param="workspace_grasps"> [-0.5, 0.5, -0.5, 0.5, -0.5, 0.5] </rosparam>
+        <rosparam param="workspace_grasps"> [-0.10, 0.10, -0.11, 0.05, 0.40, 0.58] </rosparam>
+        <!-- <rosparam param="workspace_grasps"> [-0.10, 0.10, -0.05, 0.05, 0.45, 0.60] </rosparam> -->
         <param name="filter_half_antipodal" value="false"/> <!-- on half antipodal -->
         
         <!-- Filtering of grasps which are too low on (i.e. too close to) table -->
-        <param name="filter_table_side_grasps" value="false" />
+        <param name="filter_table_side_grasps" value="true" />
         <!-- <rosparam param="vertical_axis"> [0, 0, 0] </rosparam> HERE-->
         <rosparam param="vertical_axis"> [0, 0, 1] </rosparam>
         <param name="angle_thresh" value="0.1" />
         <param name="table_height" value="0.0" />
-        <param name="table_thresh" value="0.05" />
+        <param name="table_thresh" value="0.01" />
         
         <!-- Grasp image creation -->
         <param name="create_image_batches" value="false" /> <!-- creates grasp images in batches (less memory usage) -->
-        <param name="remove_plane_before_image_calculation" value="false" /> <!-- removes table plane from point cloud to speed up shadow computations -->
+        <param name="remove_plane_before_image_calculation" value="true" /> <!-- removes table plane from point cloud to speed up shadow computations -->
         
         <!-- Clustering of grasps -->
         <param name="min_inliers" value="1" />

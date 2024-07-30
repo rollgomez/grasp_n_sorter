@@ -51,7 +51,6 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>gpd</build_depend>
-  <build_depend>gpd_ros</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
@@ -64,7 +63,6 @@
   <build_depend>depthai_ros_msgs</build_depend> -->
   <build_export_depend>geometry_msgs</build_export_depend>
   <build_export_depend>gpd</build_export_depend>
-  <build_export_depend>gpd_ros</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
@@ -76,7 +74,6 @@
   <build_export_depend>depthai_ros_msgs</build_export_depend> -->
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>gpd</exec_depend>
-  <exec_depend>gpd_ros</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
