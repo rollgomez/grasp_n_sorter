@@ -7,9 +7,13 @@ import numpy as np
 from PIL import Image as PilImage
 from tensorflow.python.compiler.tensorrt import trt_convert as trt
 from grasp_n_sorter.srv import classifyImg, classifyImgResponse
+import rospkg
 
 # Model
-model = tf.keras.models.load_model('./models/pvc_classifier_hand.h5')
+rospack = rospkg.RosPack()
+package_path = rospack.get_path('grasp_n_sorter')
+model_path = package_path + '/models/pvc_classifier_hand.h5'
+model = tf.keras.models.load_model(model_path)
 
 # Classes
 class_labels = ['codo', 'neplo', 'tee', 'union'] 

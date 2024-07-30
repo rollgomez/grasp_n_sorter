@@ -43,6 +43,9 @@ def graspsCallback(msg):
 def get_grasp_handle(req):
     global cloud, grasps
     if req.req:
+        # Clear the global grasps variable
+        grasps = []
+
         # Wait for the point cloud to arrive
         while len(cloud) == 0:
             rospy.sleep(0.01)
@@ -81,8 +84,9 @@ def get_grasp_handle(req):
         rospy.loginfo('Published cloud with %d indices', len(msg.indices))
 
         # Wait for grasps to arrive
+        rospy.loginfo('Waiting for grasps to arrive...')
         while len(grasps) < 3:
-            rospy.sleep(2)
+            rospy.sleep(0.1)
 
         grasps_response = GraspConfigList()
         grasps_response.header = Header()

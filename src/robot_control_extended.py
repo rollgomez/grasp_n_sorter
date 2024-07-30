@@ -20,6 +20,7 @@ def get_grasps(confirmation):
         get_grasp_client = rospy.ServiceProxy('get_grasps_service', reqGrasp)
         
         response = get_grasp_client(confirmation)
+        rospy.sleep(5)
         return response.grasp_configs
     
     except rospy.ServiceException as error:
@@ -226,26 +227,35 @@ if __name__ == "__main__":
     
     move_robot_joints(0, 0, 0, 0, 0, 0)
 
-    confidence = 0
-    roll = 0
-    count = 0
-    while confidence < 0.6:
-        confirmation = move_robot_to_pose(0.35, -0.03, 0.22, roll, -0.5, 0) #Move to camera
-        rospy.sleep(1)
-        if confirmation:
-            class_name, confidence = classify_object()
-            rospy.loginfo(class_name)
-            rospy.loginfo(confidence)
-            if roll < 1.57:
-                roll+=1.57
-            else:
-                roll=-1.57
-        count+=1
-        if count == 6:
-            class_name = 'codo'
-            break
+    # confidence = 0
+    # roll = 0
+    # count = 0
+    # while confidence < 0.6:
+    #     confirmation = move_robot_to_pose(0.35, -0.03, 0.22, roll, -0.5, 0) #Move to camera
+    #     rospy.sleep(1)
+    #     if confirmation:
+    #         class_name, confidence = classify_object()
+    #         rospy.loginfo(class_name)
+    #         rospy.loginfo(confidence)
+    #         if roll < 1.57:
+    #             roll+=1.57
+    #         else:
+    #             roll=-1.57
+    #     count+=1
+    #     if count == 6:
+    #         class_name = 'codo'
+    #         break
 
-    class_positions = {'codo':[0.1, 0.15, 0.15], 'neplo':[0.2, 0.15, 0.15], 'tee':[0.1, -0.15, 0.15], 'union':[0.2, -0.15, 0.15]} # Change
+    confirmation = 0
+    while not confirmation: 
+        confirmation = move_robot_to_pose(0.35, -0.03, 0.22, 0, -0.5, 0)
+        rospy.sleep(1)
+
+    class_name, confidence = classify_object()
+    rospy.loginfo(class_name)
+    rospy.loginfo(confidence)
+
+    class_positions = {'codo':[0.1, 0.20, 0.15], 'neplo':[0.2, 0.20, 0.15], 'tee':[0.1, -0.20, 0.15], 'union':[0.2, -0.20, 0.15]} # Change
     roll, pitch, yaw = 0, 1.57, 0
     x, y, z = class_positions[class_name][0], class_positions[class_name][1], class_positions[class_name][2]
     confirmation = leave_object(x, y, z, roll, pitch, yaw)
