@@ -187,73 +187,60 @@ def classify_object():
 if __name__ == "__main__":
     rospy.init_node('robot_control_node')
     
-    confirmation_grasp = 0
+    confirmation_start = move_robot_joints(0, 0, 0, 0, 0, 0)
 
-    while not confirmation_grasp:
+    if confirmation_start:
+        confirmation_grasp = 0
+        while not confirmation_grasp:
 
-        grasps = GraspConfigList()
-        grasps.grasps = []    
+            grasps = GraspConfigList()
+            grasps.grasps = []    
 
-        # Get the grasp configuration for the object
-        confirmation = 1
-        grasps = get_grasps(confirmation)
-        rospy.loginfo('FINISHED GET GRASPS ALGORITHM')
-        rospy.loginfo(grasps)
+            # Get the grasp configuration for the object
+            confirmation = 1
+            grasps = get_grasps(confirmation)
+            rospy.loginfo('FINISHED GET GRASPS ALGORITHM')
+            rospy.loginfo(grasps)
 
-        if len(grasps.grasps) == 0:
-            rospy.logwarn("No new grasps found. Retrying...")
-            continue
+            if len(grasps.grasps) == 0:
+                rospy.logwarn("No new grasps found. Retrying...")
+                continue
 
-        for grasp in grasps.grasps:
-            # Transform configuration (pose and orientation) from camera to robot base
-            grasp_position_base, rotation_matrix_base, roll, pitch, yaw = transform_cam2base(grasp.bottom, grasp.approach, grasp.binormal, grasp.axis)
+            for grasp in grasps.grasps:
+                # Transform configuration (pose and orientation) from camera to robot base
+                grasp_position_base, rotation_matrix_base, roll, pitch, yaw = transform_cam2base(grasp.bottom, grasp.approach, grasp.binormal, grasp.axis)
 
-            x, y, z = grasp_position_base
-            approach = Vector3()
-            approach.x, approach.y, approach.z = rotation_matrix_base[:, 0]
+                x, y, z = grasp_position_base
+                approach = Vector3()
+                approach.x, approach.y, approach.z = rotation_matrix_base[:, 0]
 
-            if not z < 0.015: #Filter grasps too close to ground to avoid collision
-                # Grasp object
-                rospy.loginfo("Received grasp request: x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f, approach vector: (%f, %f, %f)", 
-                        x, y, z, roll, pitch, yaw, approach.x, approach.y, approach.z)
-                confirmation_grasp = grasp_object(x, y, z, roll, pitch, yaw, approach)
+                if not z < 0.015: #Filter grasps too close to ground to avoid collision
+                    # Grasp object
+                    rospy.loginfo("Received grasp request: x=%f, y=%f, z=%f, roll=%f, pitch=%f, yaw=%f, approach vector: (%f, %f, %f)", 
+                            x, y, z, roll, pitch, yaw, approach.x, approach.y, approach.z)
+                    confirmation_grasp = grasp_object(x, y, z, roll, pitch, yaw, approach)
 
-                if confirmation_grasp:
-                    rospy.loginfo("Grasp successful, ending loop.")
-                    break  # Exit the for loop if the grasp is successful
-                else:
-                    rospy.loginfo("No successful grasp found, retrying.")
-                    continue  # Continue the while loop to try getting grasps again
+                    if confirmation_grasp:
+                        rospy.loginfo("Grasp successful, ending loop.")
+                        break  # Exit the for loop if the grasp is successful
+                    else:
+                        rospy.loginfo("No successful grasp found, retrying.")
+                        continue  # Continue the while loop to try getting grasps again
     
-    move_robot_joints(0, 0, 0, 0, 0, 0)
-
-    # confidence = 0
-    # roll = 0
-    # count = 0
-    # while confidence < 0.6:
-    #     confirmation = move_robot_to_pose(0.35, -0.03, 0.22, roll, -0.5, 0) #Move to camera
-    #     rospy.sleep(1)
-    #     if confirmation:
-    #         class_name, confidence = classify_object()
-    #         rospy.loginfo(class_name)
-    #         rospy.loginfo(confidence)
-    #         if roll < 1.57:
-    #             roll+=1.57
-    #         else:
-    #             roll=-1.57
-    #     count+=1
-    #     if count == 6:
-    #         class_name = 'codo'
-    #         break
+    # move_robot_joints(0, 0, 0, 0, 0, 0)
 
     confirmation = 0
     while not confirmation: 
         confirmation = move_robot_to_pose(0.35, -0.03, 0.22, 0, -0.5, 0)
         rospy.sleep(1)
 
-    class_name, confidence = classify_object()
-    rospy.loginfo(class_name)
-    rospy.loginfo(confidence)
+    confidence = 0
+
+    while confidence == 0:
+        class_name, confidence = classify_object()
+        rospy.loginfo(class_name)
+        #rospy.loginfo(confidence)
+        rospy.sleep(0.2)
 
     class_positions = {'codo':[0.1, 0.20, 0.15], 'neplo':[0.2, 0.20, 0.15], 'tee':[0.1, -0.20, 0.15], 'union':[0.2, -0.20, 0.15]} # Change
     roll, pitch, yaw = 0, 1.57, 0

@@ -11,7 +11,7 @@ class ImageSaver:
     def __init__(self):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.image_callback)
-        self.save_path = os.path.expanduser('~/pic2train/union')
+        self.save_path = os.path.expanduser('~/pic2test')
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
         self.image_count = self.get_initial_image_count()

@@ -63,7 +63,10 @@ if __name__ == "__main__":
     roll = 0
     count = 0
     while confidence < 0.6:
-        confirmation = leave_object(0.1, 0.15, 0.15, 0, 1.57, 0) #Move to camera
+        class_name, confidence = classify_object()
+        rospy.loginfo(class_name)
+        rospy.loginfo(confidence)
+        # confirmation = leave_object(0.1, 0.15, 0.15, 0, 1.57, 0) #Move to camera
         # rospy.sleep(1)
         # if confirmation:
         #     class_name, confidence = classify_object()

@@ -1,6 +1,6 @@
 <launch>
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_base_broadcaster" args="0.6 0 0.32 3.14159 0.65 0 world camera_link" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_base_broadcaster" args="0.6 0 0.32 3.14159 0.66 0 world camera_link" />
 
   <arg name="serial_no"           default=""/>
   <arg name="usb_port_id"         default=""/>
